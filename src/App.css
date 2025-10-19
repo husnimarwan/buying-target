@@ -1,0 +1,84 @@
+.App {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: sans-serif;
+}
+
+form {
+  display: flex;
+  margin-bottom: 2rem;
+}
+
+input[type='text'],
+input[type='number'] {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.targets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.target {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.progress-bar {
+  height: 20px;
+  background-color: #eee;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.progress {
+  height: 100%;
+  background-color: green;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}
+
+.add-budget {
+  display: flex;
+}
+
+.notification {
+  color: green;
+  font-weight: bold;
+}
+
+.history {
+  margin-top: 1rem;
+}
+
+.history h3 {
+  margin-bottom: 0.5rem;
+}
+
+.history ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.history li {
+  margin-bottom: 0.25rem;
+}
