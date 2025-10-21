@@ -18,8 +18,6 @@ A modern React application to help you track your buying targets and savings pro
 
 ![Buying Target Tracker Screenshot](./screenshots/screenshot.png)
 
-*Note: Add screenshots to the `./screenshots/` directory and update the image path above.*
-
 ## How It Works
 
 - Add a new buying target with a name and target price
