@@ -39,29 +39,44 @@ function App() {
         if (!currentUser) {
           const storedTargets = await getAllTargets();
           // Sort targets by the most recent activity (last history item or creation time)
-          const sortedTargets = storedTargets.sort((a, b) => {
+          // Ensure history items have timestamps for calculation
+          const processedTargets = storedTargets.map(target => ({
+            ...target,
+            history: target.history.map(item => ({
+              ...item,
+              timestamp: item.timestamp || (new Date(item.date)).getTime() || target.id
+            }))
+          }));
+          
+          const sortedTargets = processedTargets.sort((a, b) => {
             const lastActivityA = a.history.length > 0 
-              ? new Date(a.history[0].date).getTime() 
+              ? a.history[0].timestamp
               : a.id; // Use id (creation time) if no history
             const lastActivityB = b.history.length > 0 
-              ? new Date(b.history[0].date).getTime() 
+              ? b.history[0].timestamp
               : b.id; // Use id (creation time) if no history
             return lastActivityB - lastActivityA; // Descending order (newest first)
           });
           if (isMounted) {
             setTargets(sortedTargets);
-            // Initialize showHistory state for all targets to true by default
+            // Initialize showHistory state for all targets to true by default (show history)
             const initialShowHistory = {};
             sortedTargets.forEach(target => {
-              initialShowHistory[target.id] = true;
+              // Only initialize if target has history
+              if (target.history && target.history.length > 0) {
+                initialShowHistory[target.id] = true;
+              }
             });
             setShowHistory(initialShowHistory);
           }
         } else {
-          // When user is authenticated, initialize showHistory to show all histories by default
+          // When user is authenticated, initialize showHistory to show all histories by default (only for targets with history)
           const initialShowHistory = {};
           targets.forEach(target => {
-            initialShowHistory[target.id] = true;
+            // Only initialize if target has history
+            if (target.history && target.history.length > 0) {
+              initialShowHistory[target.id] = true;
+            }
           });
           setShowHistory(initialShowHistory);
         }
@@ -86,22 +101,33 @@ function App() {
       setSyncStatus('Syncing');
       
       const unsubscribe = subscribeToTargets(currentUser.uid, (firebaseTargets) => {
-        // Sort targets by the most recent activity
-        const sortedTargets = firebaseTargets.sort((a, b) => {
+        // Ensure history items have timestamps for calculation and sort targets by the most recent activity
+        const processedTargets = firebaseTargets.map(target => ({
+          ...target,
+          history: target.history.map(item => ({
+            ...item,
+            timestamp: item.timestamp || (new Date(item.date)).getTime() || target.id
+          }))
+        }));
+        
+        const sortedTargets = processedTargets.sort((a, b) => {
           const lastActivityA = a.history.length > 0 
-            ? new Date(a.history[0].date).getTime() 
+            ? a.history[0].timestamp
             : a.id;
           const lastActivityB = b.history.length > 0 
-            ? new Date(b.history[0].date).getTime() 
+            ? b.history[0].timestamp
             : b.id;
           return lastActivityB - lastActivityA;
         });
         setTargets(sortedTargets);
         
-        // Initialize showHistory state for all targets to true by default
+        // Initialize showHistory state for targets with history to true by default (show history)
         const initialShowHistory = {};
         sortedTargets.forEach(target => {
-          initialShowHistory[target.id] = true;
+          // Only initialize if target has history
+          if (target.history && target.history.length > 0) {
+            initialShowHistory[target.id] = true;
+          }
         });
         setShowHistory(initialShowHistory);
         
@@ -137,11 +163,13 @@ function App() {
         // Add to local database only and update UI directly
         await addTargetToDB(newTarget);
         setTargets(prevTargets => [newTarget, ...prevTargets]); // Add to the beginning of the array
-        // Update showHistory state for the new target
-        setShowHistory(prev => ({
-          ...prev,
-          [newTarget.id]: true // Show history by default for new targets
-        }));
+        // Update showHistory state for the new target only if it has history
+        if (newTarget.history && newTarget.history.length > 0) {
+          setShowHistory(prev => ({
+            ...prev,
+            [newTarget.id]: true // Show history by default
+          }));
+        }
       }
       setName('');
       setPrice('');
@@ -230,6 +258,26 @@ function App() {
       [id]: !prev[id]
     }));
   };
+  
+  // Helper function to calculate days since date
+  const getDaysSince = (timestamp) => {
+    if (!timestamp) return '';
+    const now = new Date();
+    const date = new Date(timestamp);
+    
+    // Set both dates to midnight to compare based on days only
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    const diffTime = nowMidnight - dateMidnight;
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays > 1) return `${diffDays} days ago`;
+    if (diffDays < 0) return 'Future'; // This shouldn't normally happen
+    return '';
+  };
 
   const addBudget = async (id) => {
     const amount = parseFloat(budgetInputs[id]);
@@ -241,13 +289,15 @@ function App() {
         const targetToUpdate = targets.find(target => target.id === id);
         if (!targetToUpdate) return;
         
+        const now = new Date();
         const updatedTarget = {
           ...targetToUpdate,
           budget: targetToUpdate.budget + amount,
           history: [
             {  // Add new entry at the beginning of the history array
               amount,
-              date: new Date().toLocaleString(),
+              date: now.toLocaleString(),
+              timestamp: now.getTime(), // Store timestamp for calculations
             },
             ...targetToUpdate.history
           ],
@@ -256,6 +306,15 @@ function App() {
         await updateTargetInFirebase(id, updatedTarget);
         // Also update local database
         await updateTargetInDB(updatedTarget);
+        
+        // If this target didn't have history before, initialize showHistory to true
+        const hadHistoryBefore = targetToUpdate.history && targetToUpdate.history.length > 0;
+        if (!hadHistoryBefore) {
+          setShowHistory(prev => ({
+            ...prev,
+            [id]: true // Show history for target that now has history
+          }));
+        }
       } else {
         setTargets(prevTargets => {
           // Find the target to update
@@ -263,13 +322,15 @@ function App() {
           if (!targetToUpdate) return prevTargets;
           
           // Create updated target with new budget and history
+          const now = new Date();
           const updatedTarget = {
             ...targetToUpdate,
             budget: targetToUpdate.budget + amount,
             history: [
               {  // Add new entry at the beginning of the history array
                 amount,
-                date: new Date().toLocaleString(),
+                date: now.toLocaleString(),
+                timestamp: now.getTime(), // Store timestamp for calculations
               },
               ...targetToUpdate.history
             ],
@@ -281,6 +342,15 @@ function App() {
           
           // Update the target in the database
           updateTargetInDB(updatedTarget);
+          
+          // If this target didn't have history before, initialize showHistory to true
+          const hadHistoryBefore = targetToUpdate.history && targetToUpdate.history.length > 0;
+          if (!hadHistoryBefore) {
+            setShowHistory(prev => ({
+              ...prev,
+              [id]: true // Show history for target that now has history
+            }));
+          }
           
           return newTargets;
         });
@@ -310,9 +380,11 @@ function App() {
                 src={currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`} 
                 alt="Profile" 
                 className="profile-pic" 
+                referrerPolicy="no-referrer"
                 onError={(e) => {
                   // If both Google profile pic and fallback fail, use a default avatar 
                   e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`;
+                  e.target.referrerPolicy = "no-referrer";
                 }}
               />
               <span>{currentUser.displayName || currentUser.email}</span>
@@ -405,28 +477,33 @@ function App() {
                 <button onClick={() => addBudget(target.id)}>Add</button>
               </div>
             )}
-            <div className="history">
-              <div className="history-header">
-                <h3>History</h3>
-                <button 
-                  className="toggle-history-btn"
-                  onClick={() => toggleHistory(target.id)}
-                  aria-label={showHistory[target.id] ? "Hide history" : "Show history"}
-                >
-                  {showHistory[target.id] ? "Hide" : "Show"}
-                </button>
+            {target.history && target.history.length > 0 && (
+              <div className="history">
+                <div className="history-header">
+                  <h3>History</h3>
+                  <button 
+                    className="toggle-history-btn"
+                    onClick={() => toggleHistory(target.id)}
+                    aria-label={showHistory[target.id] ? "Hide history" : "Show history"}
+                  >
+                    {showHistory[target.id] ? "Hide" : "Show"}
+                  </button>
+                </div>
+                {showHistory[target.id] && (
+                  <ul>
+                    {target.history.map((item, index) => (
+                      <li key={index}>
+                        <div className="history-amount-date">
+                          <span className="history-amount">${item.amount}</span>
+                          <span className="history-date">{item.date}</span>
+                        </div>
+                        <span className="history-days">{getDaysSince(item.timestamp)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-              {showHistory[target.id] && (
-                <ul>
-                  {target.history.map((item, index) => (
-                    <li key={index}>
-                      <span>${item.amount}</span>
-                      <span>{item.date}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            )}
           </div>
         ))}
       </div>

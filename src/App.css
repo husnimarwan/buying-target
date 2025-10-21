@@ -287,6 +287,29 @@ button:active {
   background-color: #2980b9;
 }
 
+.history-amount-date {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-right: 0.5rem;
+}
+
+.history-amount {
+  font-weight: bold;
+}
+
+.history-date {
+  font-size: 0.8rem;
+  color: #95a5a6;
+}
+
+.history-days {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  white-space: nowrap;
+  margin-left: 0.5rem;
+}
+
 .header {
   display: flex;
   flex-direction: column;
