@@ -9,10 +9,12 @@ A modern React application to help you track your buying targets and savings pro
 - **Visual progress tracking**: Progress bars showing how close you are to your target
 - **Budget history**: Keep track of when and how much you've added to each target
 - **Data persistence**: All data is saved using IndexedDB and persists between sessions
+- **Cloud synchronization**: Sign in to sync data across devices using Firebase
 - **Modern UI**: Clean, responsive design with smooth interactions
 - **Target prioritization**: Newly added targets and recently updated targets appear at the top
 - **Recent activity first**: Budget history shows most recent additions first
 - **Easy removal**: Delete targets with confirmation
+- **Security**: Sensitive API keys are protected using environment variables
 
 ## Screenshots
 
@@ -45,24 +47,50 @@ A modern React application to help you track your buying targets and savings pro
 npm install
 ```
 
-4. If you want to use Firebase features, set up environment variables:
+4. For cloud synchronization features, set up environment variables:
    - Copy the `.env.example` file to `.env`:
      ```bash
      cp .env.example .env
      ```
    - Fill in your Firebase configuration in the `.env` file
-   - Note: Do not commit the `.env` file to version control as it contains sensitive information
+   - **Important**: The `.env` file is gitignored and should never be committed to version control as it contains sensitive API keys
 
-### Firebase Setup (Optional)
+### Firebase Setup (Optional but Recommended)
 
 To use cloud synchronization features, you'll need to set up a Firebase project:
 
 1. Go to the [Firebase Console](https://console.firebase.google.com/)
 2. Create a new project or select an existing one
-3. Enable Firestore Database and Authentication
-4. Add a web app to your Firebase project to get the configuration
-5. Copy the configuration values to your `.env` file
-6. The app supports Google authentication by default
+3. Enable Firestore Database:
+   - Navigate to "Firestore Database" in the sidebar
+   - Click "Create Database"
+   - Choose your location (e.g., us-central1)
+   - Set up security rules (for testing, start with rules that allow read/write access)
+4. Enable Authentication:
+   - Navigate to "Authentication" in the sidebar
+   - Click "Get Started"
+   - Enable "Google" as a sign-in provider
+5. Add a web app to your Firebase project to get the configuration
+6. Copy the configuration values to your `.env` file
+7. The app supports Google authentication by default for secure user data synchronization
+
+### Security Features
+
+This project includes robust security measures to protect sensitive information:
+
+- **Environment Variables**: All API keys and Firebase configuration are stored in `.env` files that are gitignored
+- **Secure Configuration**: Firebase configuration is loaded from environment variables at runtime
+- **Graceful Fallback**: When Firebase is unavailable, the app continues to work with local IndexedDB storage
+- **Data Isolation**: Each user's data is properly isolated with user-specific queries
+
+### Data Synchronization
+
+The app seamlessly synchronizes data between local storage and Firebase:
+
+- **Local Storage**: Uses IndexedDB for persistent local data storage
+- **Cloud Sync**: When signed in, data syncs to Firestore for cross-device access
+- **Offline Support**: Works offline and syncs when connection is restored
+- **Real-time Updates**: Changes are reflected in real-time when online
 
 ### Running the Application
 
@@ -95,7 +123,10 @@ The built files will be in the `dist` folder.
 
 - **Frontend**: React 18
 - **Styling**: CSS with modern flexbox and grid layouts
-- **Database**: IndexedDB via the idb library for browser-based persistence
+- **Local Database**: IndexedDB via the idb library for browser-based persistence
+- **Cloud Database**: Firebase Firestore for cross-device synchronization
+- **Authentication**: Firebase Authentication with Google Sign-In
+- **Security**: Environment variables for sensitive API keys
 - **Build Tool**: Vite
 - **Package Manager**: npm
 
@@ -106,14 +137,19 @@ buying-target/
 ├── public/
 │   └── vite.svg
 ├── src/
-│   ├── assets/
-│   │   └── react.svg
+│   ├── config/
+│   │   └── firebase.js    # Firebase configuration with environment variables
 │   ├── utils/
-│   │   └── db.js          # IndexedDB database utilities
+│   │   ├── db.js          # IndexedDB database utilities
+│   │   ├── auth.js        # Firebase authentication utilities
+│   │   └── firebaseDb.js  # Firebase Firestore utilities
 │   ├── App.jsx            # Main application component
 │   ├── App.css            # Application styles
 │   ├── main.jsx           # React entry point
 │   └── index.css          # Global styles
+├── .env                   # Environment variables (gitignored)
+├── .env.example          # Example environment variables file
+├── .gitignore
 ├── index.html
 ├── package.json
 ├── vite.config.js
