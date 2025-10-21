@@ -10,11 +10,17 @@ A modern React application to help you track your buying targets and savings pro
 - **Budget history**: Keep track of when and how much you've added to each target
 - **Data persistence**: All data is saved using IndexedDB and persists between sessions
 - **Cloud synchronization**: Sign in to sync data across devices using Firebase
-- **Modern UI**: Clean, responsive design with smooth interactions
+- **Modern UI**: Clean, responsive design with smooth interactions and beautiful green theme
 - **Target prioritization**: Newly added targets and recently updated targets appear at the top
 - **Recent activity first**: Budget history shows most recent additions first
 - **Easy removal**: Delete targets with confirmation
 - **Security**: Sensitive API keys are protected using environment variables
+- **History toggle**: Show/hide budget history with toggle button
+- **Days tracking**: History entries show how many days ago budget was added
+- **Target completion**: Green checkmark appears when target is met
+- **Mobile responsive**: Optimized for all device sizes
+- **Profile pictures**: Shows user profile pictures with fallback avatars
+- **Smooth animations**: Subtle hover effects and transitions for better UX
 
 ## Screenshots
 
@@ -26,8 +32,11 @@ A modern React application to help you track your buying targets and savings pro
 - Add budget amounts to track your progress
 - See how much more you need to reach each target
 - Visual progress bars show your advancement
-- History logs keep track of your budget additions
+- History logs keep track of your budget additions with day tracking
+- Toggle history visibility to show/hide detailed information
 - Data persists in your browser even after closing the tab
+- Sign in to sync targets across devices
+- Green checkmark appears when you've met your buying target
 
 ## Getting Started
 
@@ -118,11 +127,13 @@ The built files will be in the `dist` folder.
 - **Add Budget**: Enter an amount in the budget field and click "Add"
 - **Delete Target**: Click the "×" button in the top-right corner of a target
 - **View Progress**: Progress bars and percentage values show your progress toward each target
+- **Toggle History**: Click "Show/Hide" button to toggle history visibility
+- **Track Days**: History entries show how many days ago budget was added
 
 ## Technology Stack
 
 - **Frontend**: React 18
-- **Styling**: CSS with modern flexbox and grid layouts
+- **Styling**: CSS with modern flexbox and grid layouts, beautiful green theme
 - **Local Database**: IndexedDB via the idb library for browser-based persistence
 - **Cloud Database**: Firebase Firestore for cross-device synchronization
 - **Authentication**: Firebase Authentication with Google Sign-In
@@ -144,7 +155,7 @@ buying-target/
 │   │   ├── auth.js        # Firebase authentication utilities
 │   │   └── firebaseDb.js  # Firebase Firestore utilities
 │   ├── App.jsx            # Main application component
-│   ├── App.css            # Application styles
+│   ├── App.css            # Application styles with green theme
 │   ├── main.jsx           # React entry point
 │   └── index.css          # Global styles
 ├── .env                   # Environment variables (gitignored)
@@ -155,13 +166,6 @@ buying-target/
 ├── vite.config.js
 └── README.md
 ```
-
-## Future Enhancements
-
-- User authentication with Google SSO
-- Cloud synchronization across devices
-- Export data functionality
-- Budget forecasting and planning tools
 
 ## Contributing
 
