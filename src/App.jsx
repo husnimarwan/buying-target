@@ -266,9 +266,15 @@ function App() {
         {currentUser ? (
           <div className="auth-info">
             <div className="user-info">
-              {currentUser.photoURL && (
-                <img src={currentUser.photoURL} alt="Profile" className="profile-pic" />
-              )}
+              <img 
+                src={currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`} 
+                alt="Profile" 
+                className="profile-pic" 
+                onError={(e) => {
+                  // If both Google profile pic and fallback fail, use a default avatar 
+                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`;
+                }}
+              />
               <span>{currentUser.displayName || currentUser.email}</span>
             </div>
             <div className="sync-status">Status: {syncStatus}</div>
