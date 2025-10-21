@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllTargets, addTargetToDB, updateTargetInDB, deleteTargetFromDB } from './utils/db';
+import { signInWithGoogle, signOutUser, onAuthChange } from './utils/auth';
+import { getAllTargetsFirebase, addTargetToFirebase, updateTargetInFirebase, deleteTargetFromFirebase, subscribeToTargets } from './utils/firebaseDb';
 import './App.css';
 
 function App() {
@@ -7,32 +9,90 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('Synced'); // 'Synced', 'Syncing', 'Offline'
+  let unsubscribeTargets = null;
 
-  // Load targets from database when component mounts
+  // Set up auth state listener
   useEffect(() => {
+    setLoading(true); // Start with loading state
+    
+    const unsubscribe = onAuthChange((user) => {
+      if (user) {
+        setCurrentUser(user);
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    // Clean up subscription on unmount
+    return () => unsubscribe();
+  }, []);
+
+  // Load targets from database when component mounts or auth state changes
+  useEffect(() => {
+    let isMounted = true; // To prevent state updates on unmounted components
+    
     const loadTargets = async () => {
       try {
-        const storedTargets = await getAllTargets();
-        // Sort targets by the most recent activity (last history item or creation time)
-        const sortedTargets = storedTargets.sort((a, b) => {
-          const lastActivityA = a.history.length > 0 
-            ? new Date(a.history[0].date).getTime() 
-            : a.id; // Use id (creation time) if no history
-          const lastActivityB = b.history.length > 0 
-            ? new Date(b.history[0].date).getTime() 
-            : b.id; // Use id (creation time) if no history
-          return lastActivityB - lastActivityA; // Descending order (newest first)
-        });
-        setTargets(sortedTargets);
+        if (!currentUser) {
+          const storedTargets = await getAllTargets();
+          // Sort targets by the most recent activity (last history item or creation time)
+          const sortedTargets = storedTargets.sort((a, b) => {
+            const lastActivityA = a.history.length > 0 
+              ? new Date(a.history[0].date).getTime() 
+              : a.id; // Use id (creation time) if no history
+            const lastActivityB = b.history.length > 0 
+              ? new Date(b.history[0].date).getTime() 
+              : b.id; // Use id (creation time) if no history
+            return lastActivityB - lastActivityA; // Descending order (newest first)
+          });
+          if (isMounted) {
+            setTargets(sortedTargets);
+          }
+        }
       } catch (error) {
         console.error('Error loading targets from database:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
-    loadTargets();
-  }, []);
+    // Only load local targets if user is not authenticated
+    if (!currentUser) {
+      loadTargets();
+    }
+  }, [currentUser]);
+
+  // Set up real-time listener for Firebase targets when user is authenticated
+  useEffect(() => {
+    if (currentUser) {
+      setSyncStatus('Syncing');
+      
+      const unsubscribe = subscribeToTargets(currentUser.uid, (firebaseTargets) => {
+        // Sort targets by the most recent activity
+        const sortedTargets = firebaseTargets.sort((a, b) => {
+          const lastActivityA = a.history.length > 0 
+            ? new Date(a.history[0].date).getTime() 
+            : a.id;
+          const lastActivityB = b.history.length > 0 
+            ? new Date(b.history[0].date).getTime() 
+            : b.id;
+          return lastActivityB - lastActivityA;
+        });
+        setTargets(sortedTargets);
+        setSyncStatus('Synced');
+      });
+
+      // Clean up subscription on unmount
+      return () => {
+        unsubscribe();
+      };
+    }
+  }, [currentUser]);
 
   const addTarget = async (e) => {
     e.preventDefault();
@@ -47,12 +107,20 @@ function App() {
     };
     
     try {
-      await addTargetToDB(newTarget);
-      setTargets(prevTargets => [newTarget, ...prevTargets]); // Add to the beginning of the array
+      if (currentUser) {
+        // Add to Firebase - the subscription will update the UI
+        await addTargetToFirebase(currentUser.uid, newTarget);
+        // Also save locally as backup/cached
+        await addTargetToDB(newTarget);
+      } else {
+        // Add to local database only and update UI directly
+        await addTargetToDB(newTarget);
+        setTargets(prevTargets => [newTarget, ...prevTargets]); // Add to the beginning of the array
+      }
       setName('');
       setPrice('');
     } catch (error) {
-      console.error('Error adding target to database:', error);
+      console.error('Error adding target:', error);
     }
   };
 
@@ -60,11 +128,19 @@ function App() {
 
   const deleteTarget = async (id) => {
     try {
-      await deleteTargetFromDB(id);
-      setTargets(prevTargets => prevTargets.filter(target => target.id !== id));
+      if (currentUser) {
+        // Delete from Firebase - the subscription will update the UI
+        await deleteTargetFromFirebase(id);
+        // Also delete from local database
+        await deleteTargetFromDB(id);
+      } else {
+        // Delete from local database only and update UI directly
+        await deleteTargetFromDB(id);
+        setTargets(prevTargets => prevTargets.filter(target => target.id !== id));
+      }
       setTargetToDelete(null); // Close the confirmation dialog
     } catch (error) {
-      console.error('Error deleting target from database:', error);
+      console.error('Error deleting target:', error);
       setTargetToDelete(null); // Close the confirmation dialog
     }
   };
@@ -83,6 +159,29 @@ function App() {
     setTargetToDelete(null);
   };
 
+  // Authentication functions
+  const handleGoogleSignIn = async () => {
+    try {
+      setAuthLoading(true);
+      await signInWithGoogle();
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      setAuthLoading(true);
+      await signOutUser();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const [budgetInputs, setBudgetInputs] = useState({});
 
   const handleBudgetInputChange = (id, value) => {
@@ -97,12 +196,11 @@ function App() {
     if (!amount || amount <= 0) return;
     
     try {
-      setTargets(prevTargets => {
-        // Find the target to update
-        const targetToUpdate = prevTargets.find(target => target.id === id);
-        if (!targetToUpdate) return prevTargets;
+      if (currentUser) {
+        // Update in Firebase - subscription will handle UI update
+        const targetToUpdate = targets.find(target => target.id === id);
+        if (!targetToUpdate) return;
         
-        // Create updated target with new budget and history
         const updatedTarget = {
           ...targetToUpdate,
           budget: targetToUpdate.budget + amount,
@@ -115,28 +213,87 @@ function App() {
           ],
         };
         
-        // Remove the target from its current position and add it to the beginning
-        const filteredTargets = prevTargets.filter(target => target.id !== id);
-        const newTargets = [updatedTarget, ...filteredTargets];
-        
-        // Update the target in the database
-        updateTargetInDB(updatedTarget);
-        
-        return newTargets;
-      });
+        await updateTargetInFirebase(id, updatedTarget);
+        // Also update local database
+        await updateTargetInDB(updatedTarget);
+      } else {
+        setTargets(prevTargets => {
+          // Find the target to update
+          const targetToUpdate = prevTargets.find(target => target.id === id);
+          if (!targetToUpdate) return prevTargets;
+          
+          // Create updated target with new budget and history
+          const updatedTarget = {
+            ...targetToUpdate,
+            budget: targetToUpdate.budget + amount,
+            history: [
+              {  // Add new entry at the beginning of the history array
+                amount,
+                date: new Date().toLocaleString(),
+              },
+              ...targetToUpdate.history
+            ],
+          };
+          
+          // Remove the target from its current position and add it to the beginning
+          const filteredTargets = prevTargets.filter(target => target.id !== id);
+          const newTargets = [updatedTarget, ...filteredTargets];
+          
+          // Update the target in the database
+          updateTargetInDB(updatedTarget);
+          
+          return newTargets;
+        });
+      }
       handleBudgetInputChange(id, '');
     } catch (error) {
-      console.error('Error updating target in database:', error);
+      console.error('Error updating target:', error);
     }
   };
 
   if (loading) {
-    return <div className="App"><h1>Loading Buying Target Tracker...</h1></div>;
+    return (
+      <div className="App">
+        <h1>Loading Buying Target Tracker...</h1>
+      </div>
+    );
   }
 
   return (
     <div className="App">
-      <h1>Buying Target Tracker</h1>
+      <div className="header">
+        <h1>Buying Target Tracker</h1>
+        {currentUser ? (
+          <div className="auth-info">
+            <div className="user-info">
+              {currentUser.photoURL && (
+                <img src={currentUser.photoURL} alt="Profile" className="profile-pic" />
+              )}
+              <span>{currentUser.displayName || currentUser.email}</span>
+            </div>
+            <div className="sync-status">Status: {syncStatus}</div>
+            <button 
+              onClick={handleSignOut} 
+              disabled={authLoading}
+              className="auth-btn signout-btn"
+            >
+              {authLoading ? 'Signing out...' : 'Sign Out'}
+            </button>
+          </div>
+        ) : (
+          <div className="auth-prompt">
+            <p>Sign in to sync your targets across devices</p>
+            <button 
+              onClick={handleGoogleSignIn} 
+              disabled={authLoading}
+              className="auth-btn google-signin"
+            >
+              {authLoading ? 'Signing in...' : 'Sign in with Google'}
+            </button>
+          </div>
+        )}
+      </div>
+      
       <form onSubmit={addTarget}>
         <input
           type="text"
