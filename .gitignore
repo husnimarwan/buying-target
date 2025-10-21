@@ -33,13 +33,11 @@ dist-ssr
 # Firebase
 firebase-debug.log*
 firebase_config.json
-firebase.js
 .firebase/*
 .firebase-emulators/
 
 # API keys and config files
-config/
-!config/index.js
+config/firebase_config.json
 api-keys.json
 secrets.json
 credentials.json

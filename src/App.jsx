@@ -449,7 +449,9 @@ function App() {
               </p>
             )}
             {target.budget >= target.price && (
-              <p className="notification">You've met your buying target!</p>
+              <p className="notification">
+                <span className="checkmark">✓</span> You've met your buying target!
+              </p>
             )}
             <div className="progress-bar">
               <div
