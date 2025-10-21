@@ -92,8 +92,7 @@ button:active {
 }
 
 .target:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(50, 50, 93, 0.15), 0 6px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(50, 50, 93, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .target-header {
@@ -127,13 +126,20 @@ button:active {
   display: flex;
   align-items: center;
   justify-content: center;
+  outline: none !important;
+  box-shadow: none;
 }
 
 .delete-btn:hover {
   background-color: #f8f9fa;
   color: #e74c3c;
   transform: scale(1.1);
-  outline: none;
+  outline: none !important;
+  box-shadow: none;
+}
+
+.delete-btn:focus {
+  outline: none !important;
   box-shadow: none;
 }
 

@@ -13,7 +13,17 @@ function App() {
     const loadTargets = async () => {
       try {
         const storedTargets = await getAllTargets();
-        setTargets(storedTargets);
+        // Sort targets by the most recent activity (last history item or creation time)
+        const sortedTargets = storedTargets.sort((a, b) => {
+          const lastActivityA = a.history.length > 0 
+            ? new Date(a.history[0].date).getTime() 
+            : a.id; // Use id (creation time) if no history
+          const lastActivityB = b.history.length > 0 
+            ? new Date(b.history[0].date).getTime() 
+            : b.id; // Use id (creation time) if no history
+          return lastActivityB - lastActivityA; // Descending order (newest first)
+        });
+        setTargets(sortedTargets);
       } catch (error) {
         console.error('Error loading targets from database:', error);
       } finally {
@@ -38,7 +48,7 @@ function App() {
     
     try {
       await addTargetToDB(newTarget);
-      setTargets(prevTargets => [...prevTargets, newTarget]);
+      setTargets(prevTargets => [newTarget, ...prevTargets]); // Add to the beginning of the array
       setName('');
       setPrice('');
     } catch (error) {
@@ -88,27 +98,31 @@ function App() {
     
     try {
       setTargets(prevTargets => {
-        const updatedTargets = prevTargets.map((target) =>
-          target.id === id
-            ? {
-                ...target,
-                budget: target.budget + amount,
-                history: [
-                  ...target.history,
-                  {
-                    amount,
-                    date: new Date().toLocaleString(),
-                  },
-                ],
-              }
-            : target
-        );
+        // Find the target to update
+        const targetToUpdate = prevTargets.find(target => target.id === id);
+        if (!targetToUpdate) return prevTargets;
+        
+        // Create updated target with new budget and history
+        const updatedTarget = {
+          ...targetToUpdate,
+          budget: targetToUpdate.budget + amount,
+          history: [
+            {  // Add new entry at the beginning of the history array
+              amount,
+              date: new Date().toLocaleString(),
+            },
+            ...targetToUpdate.history
+          ],
+        };
+        
+        // Remove the target from its current position and add it to the beginning
+        const filteredTargets = prevTargets.filter(target => target.id !== id);
+        const newTargets = [updatedTarget, ...filteredTargets];
         
         // Update the target in the database
-        const updatedTarget = updatedTargets.find(t => t.id === id);
         updateTargetInDB(updatedTarget);
         
-        return updatedTargets;
+        return newTargets;
       });
       handleBudgetInputChange(id, '');
     } catch (error) {
