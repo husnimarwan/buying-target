@@ -59,10 +59,17 @@ export const addTargetToFirebase = async (userId, target) => {
   }
   
   try {
-    const targetWithUser = prepareDataForFirestore({
-      ...target,
-      userId,
-    });
+    // Create a clean target object with only the properties we want to store
+    const cleanTarget = {
+      id: target.id,
+      name: target.name,
+      price: target.price,
+      budget: target.budget,
+      userId: userId,
+      history: Array.isArray(target.history) ? target.history : []
+    };
+    
+    const targetWithUser = prepareDataForFirestore(cleanTarget);
     
     const docRef = await addDoc(collection(firestore, TARGETS_COLLECTION), targetWithUser);
     return { id: docRef.id, ...targetWithUser };
@@ -85,25 +92,43 @@ export const addTargetToFirebase = async (userId, target) => {
 };
 
 // Helper function to ensure data is Firestore-compatible
-const prepareDataForFirestore = (data) => {
-  if (Array.isArray(data)) {
-    return data.map(item => prepareDataForFirestore(item));
-  } else if (typeof data === 'object' && data !== null) {
-    const result = {};
-    for (const [key, value] of Object.entries(data)) {
-      if (value instanceof Date) {
-        result[key] = value.toISOString(); // Convert dates to ISO strings
-      } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        result[key] = prepareDataForFirestore(value); // Recursively process nested objects
+const prepareDataForFirestore = (obj) => {
+  // Create a completely new object to avoid any prototype issues
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => prepareDataForFirestore(item));
+  }
+
+  if (typeof obj === 'object') {
+    // Create a plain object with no prototype
+    const cleanObj = Object.create(null);
+    
+    for (const [key, value] of Object.entries(obj)) {
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) {
+        cleanObj[key] = value;
+      } else if (value instanceof Date) {
+        cleanObj[key] = value.toISOString();
       } else if (Array.isArray(value)) {
-        result[key] = prepareDataForFirestore(value); // Process arrays
+        cleanObj[key] = prepareDataForFirestore(value);
+      } else if (typeof value === 'object') {
+        cleanObj[key] = prepareDataForFirestore(value);
       } else {
-        result[key] = value; // Keep primitives as is
+        // For any other type, convert to string representation or null
+        cleanObj[key] = JSON.stringify(value);
       }
     }
-    return result;
+    
+    return cleanObj;
   }
-  return data;
+
+  return obj;
 };
 
 // Update an existing target in Firestore
@@ -114,12 +139,27 @@ export const updateTargetInFirebase = async (targetId, target) => {
   }
   
   try {
+    console.log('Attempting to update target in Firestore with:', target);
+    
+    // Create a clean target object with only the properties we want to store
+    const cleanTarget = {
+      id: target.id,
+      name: target.name,
+      price: target.price,
+      budget: target.budget,
+      userId: target.userId,
+      history: Array.isArray(target.history) ? target.history : []
+    };
+    
+    const preparedTarget = prepareDataForFirestore(cleanTarget);
+    console.log('Prepared target for Firestore:', preparedTarget);
+    
     const targetRef = doc(firestore, TARGETS_COLLECTION, targetId);
-    const preparedTarget = prepareDataForFirestore(target);
     await updateDoc(targetRef, preparedTarget);
     return { id: targetId, ...preparedTarget };
   } catch (error) {
     console.error('Error updating target in Firestore:', error);
+    console.error('Target data that caused the error:', target);
     // Check if it's a Firestore-specific error
     if (error.code === 'unavailable' || error.code === 'permission-denied' || error.code === 'failed-precondition') {
       console.warn('Cannot update target in Firestore. This may be because:', error.message || '');
@@ -158,26 +198,43 @@ export const deleteTargetFromFirebase = async (targetId) => {
 };
 
 // Helper function to convert Firestore data back to app format
-const convertFirestoreDataToAppFormat = (data) => {
-  if (Array.isArray(data)) {
-    return data.map(item => convertFirestoreDataToAppFormat(item));
-  } else if (typeof data === 'object' && data !== null) {
-    const result = {};
-    for (const [key, value] of Object.entries(data)) {
-      if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
-        // If it looks like an ISO date string, keep it as string (toLocaleString format)
+const convertFirestoreDataToAppFormat = (obj) => {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => convertFirestoreDataToAppFormat(item));
+  }
+
+  if (typeof obj === 'object') {
+    const result = Object.create(null);
+    
+    for (const [key, value] of Object.entries(obj)) {
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) {
         result[key] = value;
-      } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        result[key] = convertFirestoreDataToAppFormat(value); // Recursively process nested objects
       } else if (Array.isArray(value)) {
-        result[key] = convertFirestoreDataToAppFormat(value); // Process arrays
+        result[key] = convertFirestoreDataToAppFormat(value);
+      } else if (typeof value === 'object') {
+        result[key] = convertFirestoreDataToAppFormat(value);
       } else {
-        result[key] = value; // Keep primitives as is
+        // For any other type, try to parse if it was JSON.stringified
+        try {
+          result[key] = JSON.parse(value);
+        } catch (e) {
+          result[key] = value;
+        }
       }
     }
+    
     return result;
   }
-  return data;
+
+  return obj;
 };
 
 // Set up real-time listener for targets
@@ -194,8 +251,19 @@ export const subscribeToTargets = (userId, callback) => {
     return onSnapshot(q, (querySnapshot) => {
       const targets = [];
       querySnapshot.forEach((doc) => {
-        const docData = convertFirestoreDataToAppFormat({ id: doc.id, ...doc.data() });
-        targets.push(docData);
+        const docData = doc.data();
+        // Ensure we create a clean object with expected properties
+        const cleanTarget = {
+          id: doc.id,
+          name: docData.name || '',
+          price: typeof docData.price === 'number' ? docData.price : 0,
+          budget: typeof docData.budget === 'number' ? docData.budget : 0,
+          userId: docData.userId,
+          history: Array.isArray(docData.history) ? docData.history : []
+        };
+        
+        const formattedTarget = convertFirestoreDataToAppFormat(cleanTarget);
+        targets.push(formattedTarget);
       });
       callback(targets);
     }, (error) => {
