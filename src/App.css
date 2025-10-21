@@ -13,37 +13,38 @@ body {
 .App {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
+  padding-top: 1.5rem;
 }
 
 h1 {
   text-align: center;
   color: #2c3e50;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   font-weight: 600;
-  font-size: 2.2rem;
+  font-size: 1.8rem;
 }
 
 form {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
   background: white;
-  padding: 1.5rem;
+  padding: 1.25rem;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 input[type='text'],
 input[type='number'] {
-  flex: 1;
   padding: 0.75rem;
   border: 1px solid #e1e5eb;
   border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.3s;
-  min-width: 200px;
+  width: 100%;
 }
 
 input[type='text']:focus,
@@ -63,7 +64,7 @@ button {
   font-size: 1rem;
   font-weight: 600;
   transition: background-color 0.3s, transform 0.2s;
-  min-width: 120px;
+  min-width: auto;
 }
 
 button:hover {
@@ -77,28 +78,44 @@ button:active {
 
 .targets {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .targets {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  form {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+  
+  h1 {
+    font-size: 2.2rem;
+  }
+  
+  .App {
+    padding: 2rem;
+  }
 }
 
 .target {
   background: white;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1.25rem;
   box-shadow: 0 4px 6px rgba(50, 50, 93, 0.08), 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: box-shadow 0.3s;
   position: relative;
   border: none;
-}
-
-.target:hover {
-  box-shadow: 0 6px 12px rgba(50, 50, 93, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .target-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #eee;
@@ -106,28 +123,32 @@ button:active {
 
 .target h2 {
   color: #2c3e50;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   margin: 0;
   font-weight: 600;
+  flex: 1;
+  word-break: break-word;
+  padding-right: 0.5rem;
 }
 
 .delete-btn {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   cursor: pointer;
   color: #95a5a6;
   padding: 0.2rem 0.5rem;
   border-radius: 50%;
   transition: all 0.3s;
   line-height: 1;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   outline: none !important;
   box-shadow: none;
+  flex-shrink: 0;
 }
 
 .delete-btn:hover {
@@ -188,18 +209,17 @@ button:active {
 
 .add-budget {
   display: flex;
+  flex-direction: column;
   gap: 0.75rem;
   margin-top: 1rem;
-  flex-wrap: wrap;
 }
 
 .add-budget input {
-  flex: 1;
   padding: 0.75rem;
   border: 1px solid #e1e5eb;
   border-radius: 8px;
   font-size: 1rem;
-  min-width: 150px;
+  width: 100%;
 }
 
 .add-budget input:focus {
@@ -212,6 +232,7 @@ button:active {
   background-color: #2ecc71;
   padding: 0.75rem 1.25rem;
   font-size: 1rem;
+  width: 100%;
 }
 
 .add-budget button:hover {
@@ -241,6 +262,39 @@ button:active {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .target {
+    padding: 1.5rem;
+  }
+  
+  .target-header {
+    align-items: center;
+  }
+  
+  .target h2 {
+    font-size: 1.4rem;
+  }
+  
+  .add-budget {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+  
+  .add-budget input {
+    flex: 1;
+    min-width: 150px;
+  }
+  
+  .add-budget button {
+    width: auto;
+  }
+  
+  .history li {
+    font-size: 0.95rem;
+  }
 }
 
 .confirmation-overlay {
