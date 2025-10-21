@@ -7,8 +7,19 @@ import {
 } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 
+// Check if Firebase auth is properly configured
+const isAuthAvailable = () => {
+  return auth !== null;
+};
+
 // Sign in with Google
 export const signInWithGoogle = async () => {
+  if (!isAuthAvailable()) {
+    console.warn('Firebase is not configured. Cannot sign in with Google.');
+    alert('Authentication features are not available. Please configure Firebase to use this feature.');
+    return null;
+  }
+  
   try {
     console.log('Attempting to sign in with Google...');
     const result = await signInWithPopup(auth, googleProvider);
@@ -37,6 +48,12 @@ export const signInWithGoogle = async () => {
 
 // Sign out
 export const signOutUser = async () => {
+  if (!isAuthAvailable()) {
+    console.warn('Firebase is not configured. Cannot sign out.');
+    // If auth is not available, just return without error
+    return;
+  }
+  
   try {
     console.log('Attempting to sign out...');
     await signOut(auth);
@@ -50,6 +67,14 @@ export const signOutUser = async () => {
 
 // Listen to auth state changes
 export const onAuthChange = (callback) => {
+  if (!isAuthAvailable()) {
+    console.warn('Firebase is not configured. Auth state listener will use local-only mode.');
+    // Simulate an unauthenticated state when auth is not available
+    callback(null);
+    // Return a dummy function that does nothing
+    return () => {};
+  }
+  
   return onAuthStateChanged(auth, (user) => {
     if (user) {
       callback({

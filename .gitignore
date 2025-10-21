@@ -33,6 +33,7 @@ dist-ssr
 # Firebase
 firebase-debug.log*
 firebase_config.json
+firebase.js
 .firebase/*
 .firebase-emulators/
 

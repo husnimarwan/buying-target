@@ -33,6 +33,7 @@ A modern React application to help you track your buying targets and savings pro
 
 - Node.js (version 14 or higher)
 - npm or yarn package manager
+- Firebase project (for cloud synchronization features)
 
 ### Installation
 
@@ -43,6 +44,25 @@ A modern React application to help you track your buying targets and savings pro
 ```bash
 npm install
 ```
+
+4. If you want to use Firebase features, set up environment variables:
+   - Copy the `.env.example` file to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Fill in your Firebase configuration in the `.env` file
+   - Note: Do not commit the `.env` file to version control as it contains sensitive information
+
+### Firebase Setup (Optional)
+
+To use cloud synchronization features, you'll need to set up a Firebase project:
+
+1. Go to the [Firebase Console](https://console.firebase.google.com/)
+2. Create a new project or select an existing one
+3. Enable Firestore Database and Authentication
+4. Add a web app to your Firebase project to get the configuration
+5. Copy the configuration values to your `.env` file
+6. The app supports Google authentication by default
 
 ### Running the Application
 
