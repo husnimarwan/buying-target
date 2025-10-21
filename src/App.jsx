@@ -193,7 +193,8 @@ function App() {
               <ul>
                 {target.history.map((item, index) => (
                   <li key={index}>
-                    ${item.amount} - {item.date}
+                    <span>${item.amount}</span>
+                    <span>{item.date}</span>
                   </li>
                 ))}
               </ul>
