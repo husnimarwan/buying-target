@@ -50,7 +50,20 @@ function App() {
           });
           if (isMounted) {
             setTargets(sortedTargets);
+            // Initialize showHistory state for all targets to true by default
+            const initialShowHistory = {};
+            sortedTargets.forEach(target => {
+              initialShowHistory[target.id] = true;
+            });
+            setShowHistory(initialShowHistory);
           }
+        } else {
+          // When user is authenticated, initialize showHistory to show all histories by default
+          const initialShowHistory = {};
+          targets.forEach(target => {
+            initialShowHistory[target.id] = true;
+          });
+          setShowHistory(initialShowHistory);
         }
       } catch (error) {
         console.error('Error loading targets from database:', error);
@@ -84,6 +97,14 @@ function App() {
           return lastActivityB - lastActivityA;
         });
         setTargets(sortedTargets);
+        
+        // Initialize showHistory state for all targets to true by default
+        const initialShowHistory = {};
+        sortedTargets.forEach(target => {
+          initialShowHistory[target.id] = true;
+        });
+        setShowHistory(initialShowHistory);
+        
         setSyncStatus('Synced');
       });
 
@@ -116,6 +137,11 @@ function App() {
         // Add to local database only and update UI directly
         await addTargetToDB(newTarget);
         setTargets(prevTargets => [newTarget, ...prevTargets]); // Add to the beginning of the array
+        // Update showHistory state for the new target
+        setShowHistory(prev => ({
+          ...prev,
+          [newTarget.id]: true // Show history by default for new targets
+        }));
       }
       setName('');
       setPrice('');
@@ -137,6 +163,12 @@ function App() {
         // Delete from local database only and update UI directly
         await deleteTargetFromDB(id);
         setTargets(prevTargets => prevTargets.filter(target => target.id !== id));
+        // Remove the target from showHistory state as well
+        setShowHistory(prev => {
+          const newState = { ...prev };
+          delete newState[id];
+          return newState;
+        });
       }
       setTargetToDelete(null); // Close the confirmation dialog
     } catch (error) {
@@ -183,12 +215,20 @@ function App() {
   };
 
   const [budgetInputs, setBudgetInputs] = useState({});
+  const [showHistory, setShowHistory] = useState({}); // Track show/hide for each target
 
   const handleBudgetInputChange = (id, value) => {
     setBudgetInputs({
       ...budgetInputs,
       [id]: value,
     });
+  };
+
+  const toggleHistory = (id) => {
+    setShowHistory(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
 
   const addBudget = async (id) => {
@@ -366,15 +406,26 @@ function App() {
               </div>
             )}
             <div className="history">
-              <h3>History</h3>
-              <ul>
-                {target.history.map((item, index) => (
-                  <li key={index}>
-                    <span>${item.amount}</span>
-                    <span>{item.date}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="history-header">
+                <h3>History</h3>
+                <button 
+                  className="toggle-history-btn"
+                  onClick={() => toggleHistory(target.id)}
+                  aria-label={showHistory[target.id] ? "Hide history" : "Show history"}
+                >
+                  {showHistory[target.id] ? "Hide" : "Show"}
+                </button>
+              </div>
+              {showHistory[target.id] && (
+                <ul>
+                  {target.history.map((item, index) => (
+                    <li key={index}>
+                      <span>${item.amount}</span>
+                      <span>{item.date}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         ))}

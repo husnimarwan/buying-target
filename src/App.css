@@ -265,6 +265,28 @@ button:active {
   flex-wrap: wrap;
 }
 
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.toggle-history-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+}
+
+.toggle-history-btn:hover {
+  background-color: #2980b9;
+}
+
 .header {
   display: flex;
   flex-direction: column;
