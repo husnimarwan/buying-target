@@ -426,36 +426,38 @@ function App() {
           ) : (
             <>
               <div className="header">
-                <img src={logo} alt="WishTrack Logo" className="logo" />
-                {currentUser ? (
-                  <div className="auth-info">
-                    <div className="user-info">
-                      <img 
-                        src={currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`} 
-                        alt="Profile" 
-                        className="profile-pic" 
-                        referrerPolicy="no-referrer"
-                        onClick={handleSignOutClick}
-                        style={{ cursor: 'pointer' }}
-                        onError={(e) => {
-                          // If both Google profile pic and fallback fail, use a default avatar 
-                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`;
-                          e.target.referrerPolicy = "no-referrer";
-                        }}
-                      />
+                <div className="header-container">
+                  <img src={logo} alt="WishTrack Logo" className="logo" />
+                  {currentUser ? (
+                    <div className="auth-info">
+                      <div className="user-info">
+                        <img 
+                          src={currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`} 
+                          alt="Profile" 
+                          className="profile-pic" 
+                          referrerPolicy="no-referrer"
+                          onClick={handleSignOutClick}
+                          style={{ cursor: 'pointer' }}
+                          onError={(e) => {
+                            // If both Google profile pic and fallback fail, use a default avatar 
+                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`;
+                            e.target.referrerPolicy = "no-referrer";
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="auth-prompt">
-                    <button 
-                      onClick={handleGoogleSignIn} 
-                      disabled={authLoading}
-                      className="auth-btn google-signin"
-                    >
-                      {authLoading ? '...' : 'Sign in'}
-                    </button>
-                  </div>
-                )}
+                  ) : (
+                    <div className="auth-prompt">
+                      <button 
+                        onClick={handleGoogleSignIn} 
+                        disabled={authLoading}
+                        className="auth-btn google-signin"
+                      >
+                        {authLoading ? '...' : 'Sign in'}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               
               <form onSubmit={addTarget}>
@@ -583,6 +585,10 @@ function App() {
                   </div>
                 </div>
               )}
+              
+              <footer className="main-app-footer">
+                <p>&copy; 2025 WishTrack. All rights reserved.</p>
+              </footer>
             </>
           )}
         </div>

@@ -14,8 +14,14 @@ body {
 .App {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem;
-  padding-top: 1.5rem;
+  padding: 0 1rem;  /* Only horizontal padding, no top padding */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.App > div:first-child {
+  flex: 1 0 auto;  /* Main content area that grows to fill space */
 }
 
 h1 {
@@ -28,6 +34,11 @@ h1 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Add spacing after the header */
+.header + * {
+  margin-top: 1.5rem;
 }
 
 form {
@@ -332,21 +343,30 @@ button:active {
 
 .header {
   background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+  border-bottom: 1px solid rgba(46, 125, 50, 0.1);
   margin-bottom: 1.5rem;
-  box-shadow: 0 8px 32px rgba(46, 125, 50, 0.15);
-  border: 1px solid rgba(46, 125, 50, 0.1);
-  position: relative;
-  overflow: hidden;
+  padding: 1rem 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   min-height: auto;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
 }
 
-.header > * {
-  flex-shrink: 0;
+.header-container {
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
 }
 
 .header > h1 {
@@ -358,7 +378,7 @@ button:active {
 .header .logo {
   max-height: 60px;  /* More appropriate size for header */
   width: auto;
-  margin: 0 auto;  /* Center the logo */
+  margin: 0;  /* Remove auto margin since container handles centering */
   display: block;
 }
 
@@ -620,7 +640,7 @@ button:active {
 /* Responsive design */
 @media (max-width: 768px) {
   .App {
-    padding: 0.5rem;
+    padding: 0 0.5rem;  /* Only horizontal padding on mobile */
   }
   
   .header {
@@ -859,7 +879,8 @@ button:active {
   margin-bottom: 1rem;
 }
 
-.landing-footer {
+.landing-footer,
+.main-app-footer {
   text-align: center;
   padding: 1.5rem 1rem;  /* Reduced padding for mobile */
   background: white;
@@ -872,6 +893,11 @@ button:active {
   margin-top: 1rem;  /* Add some top margin for spacing */
   clear: both;  /* Clear any floating elements */
   flex: 0 0 auto;  /* Don't grow or shrink */
+}
+
+/* Main app specific footer styles */
+.main-app-footer {
+  margin-top: 2rem; /* Slightly more spacing for main app */
 }
 
 /* Logo styles */
