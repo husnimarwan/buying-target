@@ -342,7 +342,7 @@ button:active {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 80px;
+  min-height: auto;
 }
 
 .header > * {
@@ -352,6 +352,14 @@ button:active {
 .header > h1 {
   flex: 1;
   text-align: center;
+}
+
+/* Header logo alignment */
+.header .logo {
+  max-height: 60px;  /* More appropriate size for header */
+  width: auto;
+  margin: 0 auto;  /* Center the logo */
+  display: block;
 }
 
 .auth-info {
@@ -659,7 +667,7 @@ button:active {
   }
   
   .history-days {
-    align-self: flex-end;
+    align-self: flex-end;  /* Align to the end for right-alignment in column layout */
   }
 }
 
@@ -695,7 +703,7 @@ button:active {
 }
 
 .landing-content {
-  flex: 1;
+  flex: 1 0 auto;  /* Don't grow beyond content height */
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
@@ -726,29 +734,70 @@ button:active {
 
 .features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr); /* Exactly 3 columns */
   gap: 2rem;
-  margin: 3rem 0;
+  max-width: 1200px; /* Add max-width for better centering */
+  margin: 3rem auto;
 }
 
 .feature-card {
   background: white;
   border-radius: 16px;
-  padding: 2rem;
+  padding: 2rem 1.5rem;
   text-align: center;
   box-shadow: 0 8px 32px rgba(46, 125, 50, 0.15);
   border: 1px solid rgba(46, 125, 50, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 180px;
 }
 
 .feature-card:hover {
   box-shadow: 0 16px 40px rgba(46, 125, 50, 0.25);
 }
 
+.feature-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem 1rem;  /* Reduced padding */
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(46, 125, 50, 0.15);
+  border: 1px solid rgba(46, 125, 50, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 200px;  /* Increased height to accommodate description */
+  gap: 0.5rem; /* Reduced gap */
+}
+
 .feature-card h3 {
-  font-size: 1.8rem;
-  margin: 0 0 1rem 0;
+  font-size: 1.4rem;  /* Slightly smaller */
+  margin: 0;
   color: #2e7d32;
+  line-height: 1.3;
+}
+
+.feature-card p {
+  font-size: 0.95rem;  /* Description text size */
+  color: #555;
+  line-height: 1.3;
+  margin: 0.25rem 0 0 0;  /* Small top margin */
+}
+
+.feature-icon {
+  font-size: 2.5rem; /* Make the emoji larger */
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.feature-card p {
+  font-size: 1.1rem;
+  color: #555;
+  line-height: 1.4;
+  margin: 0.5rem 0 0 0;
 }
 
 .feature-card p {
@@ -812,27 +861,230 @@ button:active {
 
 .landing-footer {
   text-align: center;
-  padding: 2rem;
-  margin-top: auto;
+  padding: 1.5rem 1rem;  /* Reduced padding for mobile */
   background: white;
   color: #666;
-  font-size: 0.9rem;
+  font-size: 0.8rem;  /* Smaller text for mobile */
   border-top: 1px solid #e8f5e8;
+  width: 100%;
+  box-sizing: border-box;  /* Ensure proper width calculation */
+  position: relative;  /* Ensure it's positioned normally */
+  margin-top: 1rem;  /* Add some top margin for spacing */
+  clear: both;  /* Clear any floating elements */
+  flex: 0 0 auto;  /* Don't grow or shrink */
+}
+
+/* Logo styles */
+.logo {
+  max-height: 140px;  /* Use max-height instead of height */
+  width: auto;
+  max-width: 100%;
+}
+
+/* Full-width header section for just the logo */
+.landing-header {
+  background: white;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+  border-bottom: 1px solid rgba(46, 125, 50, 0.1);
+  margin-bottom: 2rem;
+  padding: 1rem 0;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-container {
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-container .logo {
+  max-height: 100px;
+  width: auto;
+  padding: 0.5rem;
+}
+
+/* Tagline stays in the main content area with original background */
+.landing-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  width: 100%;
+}
+
+.landing-content > p {
+  margin-top: -1rem;  /* Adjust for the reduced header margin */
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #555;
+  font-size: 1.4rem;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.loading-container .logo {
+  max-height: 160px;  /* Use max-height for loading state */
+  width: auto;
 }
 
 /* Responsive design for landing page */
 @media (max-width: 768px) {
-  .landing-header h1 {
-    font-size: 2.5rem;
+  .logo {
+    max-height: 100px;  /* Max height for mobile */
+    width: auto;
+    max-width: 100%;
   }
   
+  .loading-container .logo {
+    max-height: 120px;  /* Max height for mobile loading */
+    width: auto;
+  }
+  
+  .landing-header .logo {
+    max-height: 160px; /* Max height for mobile landing */
+    width: auto;
+  }
+  
+  .header .logo {
+    max-height: 50px;  /* Smaller size for mobile header to avoid clipping */
+    width: auto;
+@media (max-width: 900px) { 
+  .features { 
+    grid-template-columns: repeat(2, 1fr); /* 2 columns for medium screens */ 
+  }
+  
+  .feature-card {
+    min-height: 150px;  /* Reduced height for medium screens */
+    padding: 1.2rem 0.8rem;  /* Reduced padding */
+  }
+  
+  .feature-card h3 {
+    font-size: 1.2rem;  /* Smaller text */
+  }
+  
+  .feature-card p {
+    font-size: 0.8rem;  /* Smaller description */
+    line-height: 1.2;   /* Tighter line height */
+  }
+  
+  .logo {
+    max-height: 100px;  /* Max height for mobile */
+    width: auto;
+    max-width: 100%;
+  }
+  
+  .loading-container .logo {
+    max-height: 120px;  /* Max height for mobile loading */
+    width: auto;
+  }
+  
+  .landing-header .logo {
+    max-height: 160px; /* Max height for mobile landing */
+    width: auto;
+  }
+  
+  .header .logo {
+    max-height: 50px;  /* Smaller size for mobile header to avoid clipping */
+    width: auto;
+  }
+}
+
+@media (max-width: 768px) {
   .landing-header p {
     font-size: 1.1rem;
   }
   
+  .landing-header {
+    padding: 0.5rem 0;
+  }
+  
+  .logo-container .logo {
+    max-height: 80px; /* Adjust for mobile */
+    padding: 0.25rem;
+  }
+  
+  .landing-content > p {
+    margin-top: -0.5rem;
+    text-align: center;
+    font-size: 1.1rem;  /* Adjust for mobile */
+  }
+  
+  .features {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;  /* Even smaller gap */
+    padding: 0 0.05rem;  /* Very minimal horizontal padding */
+    width: calc(100vw - 2px);  /* Slightly less than full viewport width */
+    max-width: 100%;  /* Ensure it doesn't exceed parent */
+    overflow-x: hidden;  /* Prevent horizontal overflow */
+    box-sizing: border-box;  /* Ensure padding is included in width */
+    margin: 0 auto;  /* Center container */
+  }
+  
+  .feature-card {
+    min-height: 40px; /* Much smaller height (40% reduction) */
+    padding: 0.15rem 0.05rem;  /* Very minimal padding */
+    margin: 0;  /* Remove any margins */
+    width: 100%;  /* Ensure full width within container */
+    box-sizing: border-box;  /* Ensure padding is included in width */
+  }
+  
+  .feature-icon {
+    font-size: 0.6rem; /* Much smaller icon (40% reduction) */
+    line-height: 1;
+    display: block;  /* Ensure it's a block element */
+  }
+  
+  .feature-card h3 {
+    font-size: 0.45rem; /* Much smaller text (40% reduction) */
+    line-height: 1.1; /* Tight line height */
+    word-wrap: break-word;  /* Ensure text wraps properly */
+    margin: 0.1rem 0 0 0;  /* Add small top margin */
+    display: block;  /* Ensure proper display */
+  }
+  
+  .feature-card p {
+    font-size: 0.3rem;  /* Small description text */
+    line-height: 1.1;   /* Tight line height for space */
+    margin: 0.1rem 0 0 0;  /* Small top margin */
+    color: #666;  /* Slightly muted color */
+    display: block;  /* Show description */
+  }
+  
+  .landing-footer {
+    padding: 0.8rem 0.3rem;  /* Smaller padding for mobile */
+    font-size: 0.45rem;  /* Much smaller text for mobile */
+  }
+}
+}
+  
   .features {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+  }
+  
+  .feature-card {
+    min-height: 150px; /* Adjust for mobile */
+    padding: 1.5rem 1rem;
+  }
+  
+  .feature-icon {
+    font-size: 2rem; /* Slightly smaller on mobile */
   }
   
   .cta-section {

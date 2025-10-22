@@ -4,6 +4,7 @@ import { getAllTargets, addTargetToDB, updateTargetInDB, deleteTargetFromDB } fr
 import { signInWithGoogle, signOutUser, onAuthChange } from './utils/auth';
 import { getAllTargetsFirebase, addTargetToFirebase, updateTargetInFirebase, deleteTargetFromFirebase, subscribeToTargets } from './utils/firebaseDb';
 import LandingPage from './components/LandingPage';
+import logo from './assets/logo.png';
 import './App.css';
 
 function App() {
@@ -417,12 +418,15 @@ function App() {
         <div className="App">
           {loading ? (
             <div className="App">
-              <h1>Loading WishTrack...</h1>
+              <div className="loading-container">
+                <img src={logo} alt="WishTrack Logo" className="logo" />
+                <h1>Loading WishTrack...</h1>
+              </div>
             </div>
           ) : (
             <>
               <div className="header">
-                <h1>WishTrack</h1>
+                <img src={logo} alt="WishTrack Logo" className="logo" />
                 {currentUser ? (
                   <div className="auth-info">
                     <div className="user-info">
