@@ -585,10 +585,6 @@ function App() {
                   </div>
                 </div>
               )}
-              
-              <footer className="main-app-footer">
-                <p>&copy; 2025 WishTrack. All rights reserved.</p>
-              </footer>
             </>
           )}
         </div>

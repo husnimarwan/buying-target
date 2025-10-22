@@ -21,7 +21,41 @@ body {
 }
 
 .App > div:first-child {
-  flex: 1 0 auto;  /* Main content area that grows to fill space */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header should not grow but stay at natural size */
+.App > div:first-child > .header {
+  flex: 0 0 auto;
+  min-height: auto;
+  height: auto;
+}
+
+/* Form should not grow */
+.App > div:first-child > form {
+  flex: 0 0 auto;
+}
+
+/* Targets container should grow to fill space when there are targets */
+.App > div:first-child > .targets:not(:empty) {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* When targets is empty, don't take up space */
+.App > div:first-child > .targets:empty {
+  flex: 0 0 auto;
+  min-height: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+/* Specific rule for the main content area inside the app route */
+.App > div:first-child > form,
+.App > div:first-child > .targets {
+  flex: 0 1 auto;  /* Don't grow unnecessarily */
 }
 
 h1 {
@@ -34,6 +68,11 @@ h1 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Header should not grow or shrink */
+.header {
+  flex: 0 0 auto;  /* Don't grow, don't shrink, size based on content */
 }
 
 /* Add spacing after the header */
@@ -346,17 +385,26 @@ button:active {
   box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
   border-bottom: 1px solid rgba(46, 125, 50, 0.1);
   margin-bottom: 1.5rem;
-  padding: 1rem 0;
+  padding: 0.75rem 0;  /* Adjusted vertical padding */
   display: flex;
   justify-content: space-between;
   align-items: center;
   min-height: auto;
+  height: auto;
   position: relative;
   left: 50%;
   right: 50%;
   margin-left: -50vw;
   margin-right: -50vw;
   width: 100vw;
+  flex: 0 0 auto;  /* Ensure header doesn't grow */
+  min-height: 60px;  /* Ensure enough height for logo */
+}
+
+/* Ensure logo is properly centered vertically */
+.header .logo {
+  margin: 0;
+  align-self: center;
 }
 
 .header-container {
@@ -366,10 +414,43 @@ button:active {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 100%;
+  min-height: auto;  /* Only take up necessary space */
+  margin: 0 auto;  /* Center the container within the full-width header */
+  text-align: left;
 }
 
-.header > h1 {
+/* Ensure proper vertical alignment of logo within header */
+.App > div:first-child > div.header > div.header-container > img.logo {
+  align-self: center;
+  margin: 0;
+}
+
+/* Specific styles for main app header */
+/* Specific styles for main app header */
+/* Very specific header layout for main app */
+.App > div:first-child > div.header > div.header-container {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+/* Ensure logo stays on the left */
+.App > div:first-child > div.header > div.header-container > img.logo {
+  flex-shrink: 0 !important;
+}
+
+/* Ensure auth elements stay on the right */
+.App > div:first-child > div.header > div.header-container > .auth-info,
+.App > div:first-child > div.header > div.header-container > .auth-prompt {
+  flex-shrink: 0 !important;
+}
+
+/* Ensure header text alignment doesn't interfere */
+.App .header {
+  text-align: left;
+}
+
+.landing-header h1 {
   flex: 1;
   text-align: center;
 }
@@ -380,6 +461,12 @@ button:active {
   width: auto;
   margin: 0;  /* Remove auto margin since container handles centering */
   display: block;
+}
+
+/* Specific styles for main app header logo */
+.App .header .logo {
+  margin: 0;  /* Ensure no margins */
+  flex-shrink: 0;  /* Prevent logo from shrinking */
 }
 
 .auth-info {
@@ -395,6 +482,25 @@ button:active {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* More specific rule for main app header profile alignment */
+.App .header .auth-info .user-info {
+  justify-content: flex-end;
+  margin-left: auto;  /* Push to the right */
+}
+
+.App .header .auth-info {
+  margin-left: auto;  /* Push auth section to the right */
 }
 
 .sync-status {
@@ -644,7 +750,27 @@ button:active {
   }
   
   .header {
-    padding: 1rem;
+    padding: 0.5rem 0;  /* Less vertical padding */
+  }
+  
+  .header .logo {
+    max-height: 40px;  /* Much smaller logo on mobile */
+  }
+  
+  .header-container {
+    padding: 0 0.5rem;  /* Less horizontal padding */
+  }
+  
+  /* Ensure proper layout on mobile */
+  .App > div:first-child > div.header > div.header-container {
+    justify-content: space-between;  /* Keep logo left and auth right */
+    gap: 0.5rem;  /* Reduce space on mobile */
+  }
+  
+  /* Ensure main content behaves properly on mobile */
+  .App > div:first-child {
+    display: flex;
+    flex-direction: column;
   }
   
   .targets {
@@ -895,23 +1021,7 @@ button:active {
 }
 
 /* Main app footer with full width extension */
-.main-app-footer {
-  text-align: center;
-  background: white;
-  color: #666;
-  font-size: 0.8rem;
-  border-top: 1px solid #e8f5e8;
-  padding: 1.5rem 0;  /* Vertical padding only */
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 2rem;  /* More spacing for main app */
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  width: 100vw;
-}
+
 
 /* Logo styles */
 .logo {
