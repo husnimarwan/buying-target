@@ -198,6 +198,7 @@ function App() {
   };
 
   const [targetToDelete, setTargetToDelete] = useState(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const deleteTarget = async (id) => {
     try {
@@ -256,15 +257,28 @@ function App() {
     }
   };
 
+  const handleSignOutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
   const handleSignOut = async () => {
     try {
       setAuthLoading(true);
       await signOutUser();
+      setShowLogoutConfirm(false);
     } catch (error) {
       console.error('Error signing out:', error);
     } finally {
       setAuthLoading(false);
     }
+  };
+
+  const confirmLogout = () => {
+    handleSignOut();
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
   };
 
   const [budgetInputs, setBudgetInputs] = useState({});
@@ -397,7 +411,7 @@ function App() {
   if (loading) {
     return (
       <div className="App">
-        <h1>Loading Buying Target Tracker...</h1>
+        <h1>Loading Wishlist Tracker...</h1>
       </div>
     );
   }
@@ -405,7 +419,7 @@ function App() {
   return (
     <div className="App">
       <div className="header">
-        <h1>Buying Target Tracker</h1>
+        <h1>Wishlist Tracker</h1>
         {currentUser ? (
           <div className="auth-info">
             <div className="user-info">
@@ -414,32 +428,24 @@ function App() {
                 alt="Profile" 
                 className="profile-pic" 
                 referrerPolicy="no-referrer"
+                onClick={handleSignOutClick}
+                style={{ cursor: 'pointer' }}
                 onError={(e) => {
                   // If both Google profile pic and fallback fail, use a default avatar 
                   e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`;
                   e.target.referrerPolicy = "no-referrer";
                 }}
               />
-              <span>{currentUser.displayName || currentUser.email}</span>
             </div>
-            <div className="sync-status">Status: {syncStatus}</div>
-            <button 
-              onClick={handleSignOut} 
-              disabled={authLoading}
-              className="auth-btn signout-btn"
-            >
-              {authLoading ? 'Signing out...' : 'Sign Out'}
-            </button>
           </div>
         ) : (
           <div className="auth-prompt">
-            <p>Sign in to sync your targets across devices</p>
             <button 
               onClick={handleGoogleSignIn} 
               disabled={authLoading}
               className="auth-btn google-signin"
             >
-              {authLoading ? 'Signing in...' : 'Sign in with Google'}
+              {authLoading ? '...' : 'Sign in'}
             </button>
           </div>
         )}
@@ -553,6 +559,19 @@ function App() {
             <div className="confirmation-buttons">
               <button className="confirm-btn" onClick={handleDeleteConfirm}>Yes</button>
               <button className="cancel-btn" onClick={handleDeleteCancel}>No</button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Logout Confirmation Dialog */}
+      {showLogoutConfirm && (
+        <div className="confirmation-overlay">
+          <div className="confirmation-dialog">
+            <p>Are you sure you want to log out?</p>
+            <div className="confirmation-buttons">
+              <button className="confirm-btn" onClick={confirmLogout}>Yes</button>
+              <button className="cancel-btn" onClick={cancelLogout}>No</button>
             </div>
           </div>
         </div>
