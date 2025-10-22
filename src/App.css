@@ -879,8 +879,7 @@ button:active {
   margin-bottom: 1rem;
 }
 
-.landing-footer,
-.main-app-footer {
+.landing-footer {
   text-align: center;
   padding: 1.5rem 1rem;  /* Reduced padding for mobile */
   background: white;
@@ -895,9 +894,23 @@ button:active {
   flex: 0 0 auto;  /* Don't grow or shrink */
 }
 
-/* Main app specific footer styles */
+/* Main app footer with full width extension */
 .main-app-footer {
-  margin-top: 2rem; /* Slightly more spacing for main app */
+  text-align: center;
+  background: white;
+  color: #666;
+  font-size: 0.8rem;
+  border-top: 1px solid #e8f5e8;
+  padding: 1.5rem 0;  /* Vertical padding only */
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 2rem;  /* More spacing for main app */
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
 }
 
 /* Logo styles */
