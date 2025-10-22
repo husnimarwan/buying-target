@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { getAllTargets, addTargetToDB, updateTargetInDB, deleteTargetFromDB } from './utils/db';
 import { signInWithGoogle, signOutUser, onAuthChange } from './utils/auth';
 import { getAllTargetsFirebase, addTargetToFirebase, updateTargetInFirebase, deleteTargetFromFirebase, subscribeToTargets } from './utils/firebaseDb';
+import LandingPage from './components/LandingPage';
 import './App.css';
 
 function App() {
@@ -408,175 +410,180 @@ function App() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="App">
-        <h1>Loading Wishlist Tracker...</h1>
-      </div>
-    );
-  }
-
   return (
-    <div className="App">
-      <div className="header">
-        <h1>Wishlist Tracker</h1>
-        {currentUser ? (
-          <div className="auth-info">
-            <div className="user-info">
-              <img 
-                src={currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`} 
-                alt="Profile" 
-                className="profile-pic" 
-                referrerPolicy="no-referrer"
-                onClick={handleSignOutClick}
-                style={{ cursor: 'pointer' }}
-                onError={(e) => {
-                  // If both Google profile pic and fallback fail, use a default avatar 
-                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`;
-                  e.target.referrerPolicy = "no-referrer";
-                }}
-              />
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/app" element={
+        <div className="App">
+          {loading ? (
+            <div className="App">
+              <h1>Loading WishTrack...</h1>
             </div>
-          </div>
-        ) : (
-          <div className="auth-prompt">
-            <button 
-              onClick={handleGoogleSignIn} 
-              disabled={authLoading}
-              className="auth-btn google-signin"
-            >
-              {authLoading ? '...' : 'Sign in'}
-            </button>
-          </div>
-        )}
-      </div>
-      
-      <form onSubmit={addTarget}>
-        <input
-          type="text"
-          placeholder="Target Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Target Price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-        <button type="submit">Add Target</button>
-      </form>
-      <div className="targets">
-        {targets.map((target) => (
-          <div key={target.id} className={`target ${collapsedTargets[target.id] ? 'collapsed' : ''}`}>
-            <div className="target-header">
-              <h2 onClick={() => toggleCollapsed(target.id)} style={{ cursor: 'pointer' }}>{target.name}</h2>
-              <button 
-                className="delete-btn" 
-                onClick={() => confirmDelete(target.id)}
-                aria-label="Delete target"
-              >
-                ×
-              </button>
-            </div>
-            <div className="target-content">
-              <p>
-                Price: ${target.price} | Budget: ${target.budget}
-              </p>
-              {target.budget < target.price && (
-                <p className="remaining">
-                  ${Math.max(0, target.price - target.budget).toFixed(2)} more needed
-                </p>
-              )}
-              {target.budget >= target.price && (
-                <p className="notification">
-                  <span className="checkmark">✓</span> You've met your buying target!
-                </p>
-              )}
-              <div className="progress-bar">
-                <div
-                  className="progress"
-                  style={{
-                    width: `${Math.min(
-                      100,
-                      (target.budget / target.price) * 100
-                    )}%`,
-                  }}
-                >
-                  {`${Math.round((target.budget / target.price) * 100)}%`}
-                </div>
-              </div>
-              {target.budget < target.price && (
-                <div className="add-budget">
-                  <input
-                    type="number"
-                    placeholder="Add Budget"
-                    value={budgetInputs[target.id] || ''}
-                    onChange={(e) =>
-                      handleBudgetInputChange(target.id, e.target.value)
-                    }
-                  />
-                  <button onClick={() => addBudget(target.id)}>Add</button>
-                </div>
-              )}
-              {target.history && target.history.length > 0 && (
-                <div className="history">
-                  <div className="history-header">
-                    <h3>History</h3>
+          ) : (
+            <>
+              <div className="header">
+                <h1>WishTrack</h1>
+                {currentUser ? (
+                  <div className="auth-info">
+                    <div className="user-info">
+                      <img 
+                        src={currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`} 
+                        alt="Profile" 
+                        className="profile-pic" 
+                        referrerPolicy="no-referrer"
+                        onClick={handleSignOutClick}
+                        style={{ cursor: 'pointer' }}
+                        onError={(e) => {
+                          // If both Google profile pic and fallback fail, use a default avatar 
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email || 'User')}&background=0D8ABC&color=fff`;
+                          e.target.referrerPolicy = "no-referrer";
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="auth-prompt">
                     <button 
-                      className="toggle-history-btn"
-                      onClick={() => toggleHistory(target.id)}
-                      aria-label={showHistory[target.id] ? "Hide history" : "Show history"}
+                      onClick={handleGoogleSignIn} 
+                      disabled={authLoading}
+                      className="auth-btn google-signin"
                     >
-                      {showHistory[target.id] ? "Hide" : "Show"}
+                      {authLoading ? '...' : 'Sign in'}
                     </button>
                   </div>
-                  {showHistory[target.id] && (
-                    <ul>
-                      {target.history.map((item, index) => (
-                        <li key={index}>
-                          <div className="history-amount-date">
-                            <span className="history-amount">${item.amount}</span>
-                            <span className="history-date">{item.date}</span>
+                )}
+              </div>
+              
+              <form onSubmit={addTarget}>
+                <input
+                  type="text"
+                  placeholder="Target Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <input
+                  type="number"
+                  placeholder="Target Price"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                />
+                <button type="submit">Add Target</button>
+              </form>
+              <div className="targets">
+                {targets.map((target) => (
+                  <div key={target.id} className={`target ${collapsedTargets[target.id] ? 'collapsed' : ''}`}>
+                    <div className="target-header">
+                      <h2 onClick={() => toggleCollapsed(target.id)} style={{ cursor: 'pointer' }}>{target.name}</h2>
+                      <button 
+                        className="delete-btn" 
+                        onClick={() => confirmDelete(target.id)}
+                        aria-label="Delete target"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <div className="target-content">
+                      <p>
+                        Price: ${target.price} | Budget: ${target.budget}
+                      </p>
+                      {target.budget < target.price && (
+                        <p className="remaining">
+                          ${Math.max(0, target.price - target.budget).toFixed(2)} more needed
+                        </p>
+                      )}
+                      {target.budget >= target.price && (
+                        <p className="notification">
+                          <span className="checkmark">✓</span> You've met your buying target!
+                        </p>
+                      )}
+                      <div className="progress-bar">
+                        <div
+                          className="progress"
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              (target.budget / target.price) * 100
+                            )}%`,
+                          }}
+                        >
+                          {`${Math.round((target.budget / target.price) * 100)}%`}
+                        </div>
+                      </div>
+                      {target.budget < target.price && (
+                        <div className="add-budget">
+                          <input
+                            type="number"
+                            placeholder="Add Budget"
+                            value={budgetInputs[target.id] || ''}
+                            onChange={(e) =>
+                              handleBudgetInputChange(target.id, e.target.value)
+                            }
+                          />
+                          <button onClick={() => addBudget(target.id)}>Add</button>
+                        </div>
+                      )}
+                      {target.history && target.history.length > 0 && (
+                        <div className="history">
+                          <div className="history-header">
+                            <h3>History</h3>
+                            <button 
+                              className="toggle-history-btn"
+                              onClick={() => toggleHistory(target.id)}
+                              aria-label={showHistory[target.id] ? "Hide history" : "Show history"}
+                            >
+                              {showHistory[target.id] ? "Hide" : "Show"}
+                            </button>
                           </div>
-                          <span className="history-days">{getDaysSince(item.timestamp)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                          {showHistory[target.id] && (
+                            <ul>
+                              {target.history.map((item, index) => (
+                                <li key={index}>
+                                  <div className="history-amount-date">
+                                    <span className="history-amount">${item.amount}</span>
+                                    <span className="history-date">{item.date}</span>
+                                  </div>
+                                  <span className="history-days">{getDaysSince(item.timestamp)}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Confirmation Dialog */}
+              {targetToDelete !== null && (
+                <div className="confirmation-overlay">
+                  <div className="confirmation-dialog">
+                    <p>Are you sure you want to delete this target?</p>
+                    <div className="confirmation-buttons">
+                      <button className="confirm-btn" onClick={handleDeleteConfirm}>Yes</button>
+                      <button className="cancel-btn" onClick={handleDeleteCancel}>No</button>
+                    </div>
+                  </div>
                 </div>
               )}
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      {/* Confirmation Dialog */}
-      {targetToDelete !== null && (
-        <div className="confirmation-overlay">
-          <div className="confirmation-dialog">
-            <p>Are you sure you want to delete this target?</p>
-            <div className="confirmation-buttons">
-              <button className="confirm-btn" onClick={handleDeleteConfirm}>Yes</button>
-              <button className="cancel-btn" onClick={handleDeleteCancel}>No</button>
-            </div>
-          </div>
+              
+              {/* Logout Confirmation Dialog */}
+              {showLogoutConfirm && (
+                <div className="confirmation-overlay">
+                  <div className="confirmation-dialog">
+                    <p>Are you sure you want to log out?</p>
+                    <div className="confirmation-buttons">
+                      <button className="confirm-btn" onClick={confirmLogout}>Yes</button>
+                      <button className="cancel-btn" onClick={cancelLogout}>No</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
-      )}
-      
-      {/* Logout Confirmation Dialog */}
-      {showLogoutConfirm && (
-        <div className="confirmation-overlay">
-          <div className="confirmation-dialog">
-            <p>Are you sure you want to log out?</p>
-            <div className="confirmation-buttons">
-              <button className="confirm-btn" onClick={confirmLogout}>Yes</button>
-              <button className="cancel-btn" onClick={cancelLogout}>No</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      } />
+    </Routes>
   );
 }
 
