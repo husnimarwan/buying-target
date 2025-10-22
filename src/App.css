@@ -129,6 +129,16 @@ button:active {
   color: #1b5e20;
 }
 
+.target-header h2 {
+  outline: none;
+  -webkit-tap-highlight-color: transparent; /* Remove mobile tap highlight */
+  -webkit-touch-callout: none; /* Disable context menu on long press */
+}
+
+.target-header h2:focus {
+  outline: none;
+}
+
 .target.collapsed {
   padding: 1rem;
   min-height: auto;
@@ -193,11 +203,20 @@ button:active {
   padding: 0 !important;
   position: relative !important;
   overflow: hidden !important;
+  outline: none !important;  /* Remove focus outline */
 }
 
 .delete-btn:hover {
   background: linear-gradient(135deg, #ef5350 0%, #d32f2f 100%);
   transform: scale(1.1);
+}
+
+.delete-btn:focus {
+  outline: none !important;
+}
+
+.delete-btn {
+  -webkit-tap-highlight-color: transparent; /* Remove mobile tap highlight */
 }
 
 .target p {
