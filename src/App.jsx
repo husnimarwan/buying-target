@@ -68,6 +68,13 @@ function App() {
               }
             });
             setShowHistory(initialShowHistory);
+            
+            // Initialize collapsedTargets to false for all targets (not collapsed by default)
+            const initialCollapsedTargets = {};
+            sortedTargets.forEach(target => {
+              initialCollapsedTargets[target.id] = false;
+            });
+            setCollapsedTargets(initialCollapsedTargets);
           }
         } else {
           // When user is authenticated, initialize showHistory to show all histories by default (only for targets with history)
@@ -131,6 +138,13 @@ function App() {
         });
         setShowHistory(initialShowHistory);
         
+        // Initialize collapsedTargets to false for all targets (not collapsed by default)
+        const initialCollapsedTargets = {};
+        sortedTargets.forEach(target => {
+          initialCollapsedTargets[target.id] = false;
+        });
+        setCollapsedTargets(initialCollapsedTargets);
+        
         setSyncStatus('Synced');
       });
 
@@ -170,6 +184,11 @@ function App() {
             [newTarget.id]: true // Show history by default
           }));
         }
+        // Initialize collapsed state for new target to false (not collapsed)
+        setCollapsedTargets(prev => ({
+          ...prev,
+          [newTarget.id]: false
+        }));
       }
       setName('');
       setPrice('');
@@ -193,6 +212,12 @@ function App() {
         setTargets(prevTargets => prevTargets.filter(target => target.id !== id));
         // Remove the target from showHistory state as well
         setShowHistory(prev => {
+          const newState = { ...prev };
+          delete newState[id];
+          return newState;
+        });
+        // Remove the target from collapsedTargets state as well
+        setCollapsedTargets(prev => {
           const newState = { ...prev };
           delete newState[id];
           return newState;
@@ -244,6 +269,7 @@ function App() {
 
   const [budgetInputs, setBudgetInputs] = useState({});
   const [showHistory, setShowHistory] = useState({}); // Track show/hide for each target
+  const [collapsedTargets, setCollapsedTargets] = useState({}); // Track collapsed state for each target
 
   const handleBudgetInputChange = (id, value) => {
     setBudgetInputs({
@@ -254,6 +280,13 @@ function App() {
 
   const toggleHistory = (id) => {
     setShowHistory(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const toggleCollapsed = (id) => {
+    setCollapsedTargets(prev => ({
       ...prev,
       [id]: !prev[id]
     }));
@@ -429,9 +462,9 @@ function App() {
       </form>
       <div className="targets">
         {targets.map((target) => (
-          <div key={target.id} className="target">
+          <div key={target.id} className={`target ${collapsedTargets[target.id] ? 'collapsed' : ''}`}>
             <div className="target-header">
-              <h2>{target.name}</h2>
+              <h2 onClick={() => toggleCollapsed(target.id)} style={{ cursor: 'pointer' }}>{target.name}</h2>
               <button 
                 className="delete-btn" 
                 onClick={() => confirmDelete(target.id)}
@@ -440,72 +473,74 @@ function App() {
                 ×
               </button>
             </div>
-            <p>
-              Price: ${target.price} | Budget: ${target.budget}
-            </p>
-            {target.budget < target.price && (
-              <p className="remaining">
-                ${Math.max(0, target.price - target.budget).toFixed(2)} more needed
+            <div className="target-content">
+              <p>
+                Price: ${target.price} | Budget: ${target.budget}
               </p>
-            )}
-            {target.budget >= target.price && (
-              <p className="notification">
-                <span className="checkmark">✓</span> You've met your buying target!
-              </p>
-            )}
-            <div className="progress-bar">
-              <div
-                className="progress"
-                style={{
-                  width: `${Math.min(
-                    100,
-                    (target.budget / target.price) * 100
-                  )}%`,
-                }}
-              >
-                {`${Math.round((target.budget / target.price) * 100)}%`}
-              </div>
-            </div>
-            {target.budget < target.price && (
-              <div className="add-budget">
-                <input
-                  type="number"
-                  placeholder="Add Budget"
-                  value={budgetInputs[target.id] || ''}
-                  onChange={(e) =>
-                    handleBudgetInputChange(target.id, e.target.value)
-                  }
-                />
-                <button onClick={() => addBudget(target.id)}>Add</button>
-              </div>
-            )}
-            {target.history && target.history.length > 0 && (
-              <div className="history">
-                <div className="history-header">
-                  <h3>History</h3>
-                  <button 
-                    className="toggle-history-btn"
-                    onClick={() => toggleHistory(target.id)}
-                    aria-label={showHistory[target.id] ? "Hide history" : "Show history"}
-                  >
-                    {showHistory[target.id] ? "Hide" : "Show"}
-                  </button>
+              {target.budget < target.price && (
+                <p className="remaining">
+                  ${Math.max(0, target.price - target.budget).toFixed(2)} more needed
+                </p>
+              )}
+              {target.budget >= target.price && (
+                <p className="notification">
+                  <span className="checkmark">✓</span> You've met your buying target!
+                </p>
+              )}
+              <div className="progress-bar">
+                <div
+                  className="progress"
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      (target.budget / target.price) * 100
+                    )}%`,
+                  }}
+                >
+                  {`${Math.round((target.budget / target.price) * 100)}%`}
                 </div>
-                {showHistory[target.id] && (
-                  <ul>
-                    {target.history.map((item, index) => (
-                      <li key={index}>
-                        <div className="history-amount-date">
-                          <span className="history-amount">${item.amount}</span>
-                          <span className="history-date">{item.date}</span>
-                        </div>
-                        <span className="history-days">{getDaysSince(item.timestamp)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
-            )}
+              {target.budget < target.price && (
+                <div className="add-budget">
+                  <input
+                    type="number"
+                    placeholder="Add Budget"
+                    value={budgetInputs[target.id] || ''}
+                    onChange={(e) =>
+                      handleBudgetInputChange(target.id, e.target.value)
+                    }
+                  />
+                  <button onClick={() => addBudget(target.id)}>Add</button>
+                </div>
+              )}
+              {target.history && target.history.length > 0 && (
+                <div className="history">
+                  <div className="history-header">
+                    <h3>History</h3>
+                    <button 
+                      className="toggle-history-btn"
+                      onClick={() => toggleHistory(target.id)}
+                      aria-label={showHistory[target.id] ? "Hide history" : "Show history"}
+                    >
+                      {showHistory[target.id] ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  {showHistory[target.id] && (
+                    <ul>
+                      {target.history.map((item, index) => (
+                        <li key={index}>
+                          <div className="history-amount-date">
+                            <span className="history-amount">${item.amount}</span>
+                            <span className="history-date">{item.date}</span>
+                          </div>
+                          <span className="history-days">{getDaysSince(item.timestamp)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>

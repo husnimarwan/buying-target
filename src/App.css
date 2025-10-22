@@ -104,16 +104,6 @@ button:active {
   overflow: hidden;
 }
 
-.target::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #2e7d32, #4caf50);
-}
-
 .target:hover {
   box-shadow: 0 12px 40px rgba(46, 125, 50, 0.25);
 }
@@ -132,6 +122,51 @@ button:active {
   font-size: 1.4rem;
   font-weight: 600;
   flex: 1;
+  cursor: pointer;
+}
+
+.target-header h2:hover {
+  color: #1b5e20;
+}
+
+.target.collapsed {
+  padding: 1rem;
+  min-height: auto;
+}
+
+.target.collapsed .target-header {
+  margin-bottom: 0;
+}
+
+/* Ensure collapsed targets don't leave white space */
+.target {
+  transition: all 0.3s ease;
+}
+
+.target.collapsed {
+  height: auto;
+  min-height: auto;
+  padding: 1rem;
+}
+
+/* Make sure content area collapses properly */
+.target:not(.collapsed) {
+  overflow: visible;
+}
+
+/* Specific styling for the content that gets hidden when collapsed */
+.target .target-content {
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  overflow: hidden;
+}
+
+.target.collapsed .target-content {
+  max-height: 0;
+  opacity: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 0;
+  border: none;
 }
 
 .delete-btn {
@@ -285,16 +320,6 @@ button:active {
   border: 1px solid rgba(46, 125, 50, 0.1);
   position: relative;
   overflow: hidden;
-}
-
-.header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, #2e7d32, #4caf50);
 }
 
 .auth-info {
@@ -612,13 +637,7 @@ button:active {
 
 /* Progress bar animation */
 .progress {
-  animation: fillProgress 1s ease-out;
-}
-
-@keyframes fillProgress {
-  from {
-    width: 0;
-  }
+  transition: width 0.5s ease;
 }
 
 /* Loading animation for targets */
