@@ -1,0 +1,2 @@
+Biggest final goal: Users can actually add budget by topping up real money with integrated wallet. 
+and then use easy checkout feature when they've met the budget
